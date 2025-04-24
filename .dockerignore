@@ -1,0 +1,27 @@
+# Source control & metadata
+.git
+.gitignore
+.dockerignore
+
+# IDE/editor settings
+.vscode
+.idea
+*.swp
+*.swo
+
+# Docs & temp files
+*.log
+*.tmp
+*.md
+
+# Build artifacts
+*.exe
+*.out
+bin/
+vendor/
+
+# Swagger docs (will be rebuilt in builder stage)
+docs/
+
+# Local test files
+files/*

@@ -1,0 +1,31 @@
+# Binaries
+/pdf-encryptor
+
+# Runtime files
+*.log
+*.tmp
+
+# IDE/editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Swagger docs (regenerate via swag init)
+docs/
+
+# Go build artifacts
+bin/
+*.exe
+*.out
+
+# Go modules cache (optional)
+vendor/
+
+# Uploaded or test files
+files/*
+!files/.gitkeep
