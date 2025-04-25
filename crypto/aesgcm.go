@@ -10,26 +10,25 @@ import (
 	"os"
 )
 
+const encryptionHeader = "PDFCryptMPv1" // ✨ Header untuk validasi file hasil enkripsi
+
 func EncryptAESGCM(source, dest, hexKey string) error {
 	key, err := hex.DecodeString(hexKey)
 	if err != nil || len(key) != 32 {
 		return errors.New("invalid key: must be 256-bit hex string")
 	}
 
-	// Buka file sumber
 	input, err := os.Open(source)
 	if err != nil {
 		return err
 	}
 	defer input.Close()
 
-	// Jika src dan dest sama, gunakan file sementara
 	tempPath := dest
 	if source == dest {
 		tempPath = dest + ".tmp"
 	}
 
-	// Buat file tujuan atau sementara
 	output, err := os.Create(tempPath)
 	if err != nil {
 		return err
@@ -51,6 +50,10 @@ func EncryptAESGCM(source, dest, hexKey string) error {
 		return err
 	}
 
+	// ✨ Tulis header + nonce ke file
+	if _, err := output.Write([]byte(encryptionHeader)); err != nil {
+		return err
+	}
 	if _, err := output.Write(nonce); err != nil {
 		return err
 	}
@@ -65,7 +68,6 @@ func EncryptAESGCM(source, dest, hexKey string) error {
 		return err
 	}
 
-	// Overwrite jika src == dest
 	if source == dest {
 		output.Close()
 		input.Close()
@@ -92,6 +94,15 @@ func DecryptAESGCM(source, dest, hexKey string) error {
 	}
 	defer input.Close()
 
+	// ✨ Cek header dulu
+	header := make([]byte, len(encryptionHeader))
+	if _, err := io.ReadFull(input, header); err != nil {
+		return err
+	}
+	if string(header) != encryptionHeader {
+		return errors.New("file is not encrypted by this system")
+	}
+
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return err
@@ -114,7 +125,8 @@ func DecryptAESGCM(source, dest, hexKey string) error {
 
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		return err
+		// ✨ Return pesan eksplisit agar handler bisa kasih 401
+		return errors.New("message authentication failed")
 	}
 
 	tempPath := dest
@@ -132,7 +144,6 @@ func DecryptAESGCM(source, dest, hexKey string) error {
 		return err
 	}
 
-	// Overwrite jika src == dest
 	if source == dest {
 		output.Close()
 		input.Close()

@@ -20,8 +20,5 @@
 bin/
 vendor/
 
-# Swagger docs (will be rebuilt in builder stage)
-docs/
-
 # Local test files
 files/*

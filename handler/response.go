@@ -33,6 +33,12 @@ func respond(w http.ResponseWriter, err error) {
 	case strings.Contains(err.Error(), "invalid key"):
 		w.WriteHeader(http.StatusBadRequest)
 
+	case strings.Contains(err.Error(), "file is not encrypted by this system"):
+		w.WriteHeader(http.StatusUnprocessableEntity) // 422
+
+	case strings.Contains(err.Error(), "message authentication failed"):
+		w.WriteHeader(http.StatusBadRequest) // 401
+
 	case os.IsNotExist(err): // file not found
 		w.WriteHeader(http.StatusNotFound)
 

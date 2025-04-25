@@ -11,7 +11,6 @@ import (
 // @title PDF Encryptor API
 // @version 1.0
 // @description API untuk enkripsi dan dekripsi file PDF dengan AES-GCM dan ChaCha20-Poly1305
-// @host localhost:7082
 // @BasePath /
 func main() {
 	http.HandleFunc("/aes-gcm/encrypt", handler.AesGcmEncryptHandler)

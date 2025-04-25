@@ -10,6 +10,8 @@ import (
 	"golang.org/x/crypto/chacha20poly1305"
 )
 
+const chachaHeader = "PDFCryptMPv1" // ✨ header untuk validasi file hasil enkripsi
+
 func EncryptChaCha20(source, dest, hexKey string) error {
 	key, err := hex.DecodeString(hexKey)
 	if err != nil || len(key) != chacha20poly1305.KeySize {
@@ -43,6 +45,10 @@ func EncryptChaCha20(source, dest, hexKey string) error {
 		return err
 	}
 
+	// ✨ Tulis header + nonce
+	if _, err := output.Write([]byte(chachaHeader)); err != nil {
+		return err
+	}
 	if _, err := output.Write(nonce); err != nil {
 		return err
 	}
@@ -83,6 +89,15 @@ func DecryptChaCha20(source, dest, hexKey string) error {
 	}
 	defer input.Close()
 
+	// ✨ Cek header terlebih dahulu
+	header := make([]byte, len(chachaHeader))
+	if _, err := io.ReadFull(input, header); err != nil {
+		return err
+	}
+	if string(header) != chachaHeader {
+		return errors.New("file is not encrypted by this system")
+	}
+
 	nonce := make([]byte, chacha20poly1305.NonceSize)
 	if _, err := io.ReadFull(input, nonce); err != nil {
 		return err
@@ -100,7 +115,7 @@ func DecryptChaCha20(source, dest, hexKey string) error {
 
 	plaintext, err := aead.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		return err
+		return errors.New("message authentication failed")
 	}
 
 	tempPath := dest
